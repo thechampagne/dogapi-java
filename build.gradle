@@ -1,0 +1,72 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'signing'
+}
+
+group 'io.github.thexxiv'
+version '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation('com.google.code.gson:gson:2.8.9')
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier.set('sources')
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier.set('javadoc')
+    from javadoc.destinationDir
+}
+
+publishing {
+    repositories {
+        maven {
+            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            credentials {
+                username = project.findProperty('USERNAME')
+                password = project.findProperty('PASSWORD')
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            artifact sourcesJar
+            artifact javadocJar
+
+            from components.java
+
+            pom {
+                name = 'DogAPI'
+                description = 'Dog API client'
+                url = 'https://github.com/thechampagne/dogapi-java'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'https://github.com/thechampagne/dogapi-java/blob/main/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        name = 'XXIV'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/thechampagne/dogapi-java.git'
+                    developerConnection = 'scm:git:ssh://github.com/thechampagne/dogapi-java.git'
+                    url = 'https://github.com/thechampagne/dogapi-java'
+                }
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.maven
+}
